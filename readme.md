@@ -1,6 +1,6 @@
 # 🏥 AI Medical Assistant (Doctor Copilot)
 
-## 📌 Overview
+## Overview
 
 This project is a **Streamlit-based AI Medical Assistant** that simulates a real-world clinical decision support system.
 
@@ -14,7 +14,7 @@ It enables doctors to:
 
 ---
 
-## 🎯 Why This Project
+## Why This Project
 
 This project demonstrates how modern GenAI systems can be built to:
 
@@ -26,9 +26,9 @@ This project demonstrates how modern GenAI systems can be built to:
 
 ---
 
-## 🧠 Key Features
+## Key Features
 
-### 👨‍⚕️ Patient Management
+### Patient Management
 
 * Select existing patients from dropdown
 * Add new patients dynamically
@@ -37,7 +37,7 @@ This project demonstrates how modern GenAI systems can be built to:
 
 ---
 
-### 📜 Patient History
+### Patient History
 
 * View past visits in sidebar
 * Stores:
@@ -48,7 +48,7 @@ This project demonstrates how modern GenAI systems can be built to:
 
 ---
 
-### 🧠 AI-Generated Patient Summary
+### AI-Generated Patient Summary
 
 * One-click clinical summary
 * Highlights:
@@ -59,7 +59,7 @@ This project demonstrates how modern GenAI systems can be built to:
 
 ---
 
-### 📂 Document Upload (RAG)
+### Document Upload (RAG)
 
 * Upload medical PDFs (e.g., diabetes guidelines)
 * Extract and embed content
@@ -67,7 +67,7 @@ This project demonstrates how modern GenAI systems can be built to:
 
 ---
 
-### 🔍 Retrieval-Augmented Generation (RAG)
+### Retrieval-Augmented Generation (RAG)
 
 * Retrieves relevant document chunks
 * Injects into prompt
@@ -75,21 +75,21 @@ This project demonstrates how modern GenAI systems can be built to:
 
 ---
 
-### 💬 Conversational Chat
+### Conversational Chat
 
 * Chat interface with memory
 * Maintains context across queries
 
 ---
 
-### ⚙️ Debug Mode
+### Debug Mode
 
 * View retrieved document chunks
 * Understand how RAG works internally
 
 ---
 
-### 🛡️ Guardrails
+### Guardrails
 
 * Only medical queries allowed
 * Prevents hallucination
@@ -98,7 +98,7 @@ This project demonstrates how modern GenAI systems can be built to:
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```text
 Doctor Query
@@ -118,7 +118,7 @@ Grounded Response
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * **Frontend/UI**: Streamlit
 * **LLM**: OpenAI API
@@ -129,13 +129,12 @@ Grounded Response
 
 ---
 
-## 📸 Demo
+## Demo
 
 ```
 /assets/demo.png
 ```
-
-*(Add screenshots here for better impact)*
+![alt text](image.png)
 
 ---
 
@@ -157,7 +156,7 @@ medical-ai-app/
 
 ---
 
-# ⚙️ Local Setup Instructions
+# Local Setup Instructions
 
 ## 1️⃣ Clone Repository
 
@@ -196,7 +195,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 Create a `.env` file:
 
@@ -207,7 +206,7 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 
 ---
 
-## ▶️ Run the Application
+## Run the Application
 
 ```bash
 streamlit run app.py
@@ -215,9 +214,9 @@ streamlit run app.py
 
 ---
 
-## 🧪 How to Use
+## How to Use
 
-### 🔹 Existing Patient
+### Existing Patient
 
 1. Select patient from dropdown
 2. View history
@@ -226,7 +225,7 @@ streamlit run app.py
 
 ---
 
-### 🔹 New Patient
+### New Patient
 
 1. Select “New Patient”
 2. Enter details
@@ -235,7 +234,7 @@ streamlit run app.py
 
 ---
 
-### 🔹 With Document (RAG)
+### With Document (RAG)
 
 1. Upload medical PDF
 2. Ask questions
@@ -243,7 +242,7 @@ streamlit run app.py
 
 ---
 
-## 🔥 Example Use Case
+## Example Use Case
 
 **Patient:** Amit (Age 50)
 **Symptoms:** Fatigue, frequent urination
@@ -254,7 +253,7 @@ streamlit run app.py
 Based on patient history, what is the likely condition?
 ```
 
-👉 System:
+System:
 
 * Uses patient history
 * Retrieves document context
@@ -262,7 +261,7 @@ Based on patient history, what is the likely condition?
 
 ---
 
-## 📝 Notes
+## Notes
 
 * Ensure PDFs contain **selectable text** (not scanned images)
 * Responses are grounded in retrieved + patient context
@@ -270,9 +269,9 @@ Based on patient history, what is the likely condition?
 
 ---
 
-# 🐳 Docker Setup
+# Docker Setup
 
-## 📦 Prerequisites
+## Prerequisites
 
 * Windows 10/11 (64-bit)
 * WSL2 enabled
@@ -280,7 +279,7 @@ Based on patient history, what is the likely condition?
 
 ---
 
-## ⚙️ Step 1: Install Docker
+## Step 1: Install Docker
 
 1. Download Docker Desktop
    https://www.docker.com/products/docker-desktop/
@@ -291,7 +290,7 @@ Based on patient history, what is the likely condition?
 
 ---
 
-## 🔍 Step 2: Verify Installation
+## Step 2: Verify Installation
 
 ```bash
 docker version
@@ -306,7 +305,7 @@ Server:
 
 ---
 
-## 🔐 Step 3: Fix Permission Issue (WSL)
+## Step 3: Fix Permission Issue (WSL)
 
 ```bash
 sudo usermod -aG docker $USER
@@ -320,7 +319,7 @@ wsl --shutdown
 
 ---
 
-## 📁 Step 4: Navigate to Project
+## Step 4: Navigate to Project
 
 ```bash
 cd /mnt/d/medical-ai-app
@@ -328,7 +327,7 @@ cd /mnt/d/medical-ai-app
 
 ---
 
-## 🐳 Step 5: Dockerfile
+## Step 5: Dockerfile
 
 ```dockerfile
 FROM python:3.10-slim
@@ -346,7 +345,7 @@ CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0
 
 ---
 
-## 📦 Step 6: Build Docker Image
+## Step 6: Build Docker Image
 
 ```bash
 docker build -t medical-ai-app .
@@ -354,7 +353,7 @@ docker build -t medical-ai-app .
 
 ---
 
-## ▶️ Step 7: Run Container
+## Step 7: Run Container
 
 ```bash
 docker run -p 8501:8501 \
@@ -401,7 +400,7 @@ newgrp docker
 
 ---
 
-# 🚀 Future Enhancements
+# Future Enhancements
 
 * Patient timeline visualization
 * PDF report export
@@ -413,7 +412,7 @@ newgrp docker
 
 ---
 
-## 🎓 Learning Outcomes
+## Learning Outcomes
 
 * Build RAG-based applications
 * Design stateful AI systems
@@ -422,6 +421,6 @@ newgrp docker
 
 ---
 
-## 📄 License
+## License
 
 For educational purposes only.
