@@ -7,12 +7,11 @@ from utils.pdf_loader import load_pdf
 from rag_pipeline import create_vector_store, retrieve_docs
 from prompts import build_prompt
 
-from utils.patient_db import (
-    add_or_update_patient,
-    get_patient_summary,
-    get_all_patients,
-    get_patient_full_history
-)
+# Patient DB
+from utils.patient_db import add_or_update_patient, get_patient_summary
+
+# Get all patients' name and patient's full history
+from utils.patient_db import get_all_patients, get_patient_full_history
 
 # -----------------------------
 # Load environment
@@ -24,10 +23,8 @@ client = OpenAI(
     base_url=os.getenv("OPENAI_BASE_URL")
 )
 
-# -----------------------------
-# AI Patient Summary Function
-# -----------------------------
 def generate_patient_summary(history):
+
     if not history:
         return "No history available."
 
@@ -43,7 +40,7 @@ Summarize the patient's history in a concise clinical format.
 History:
 {history_text}
 
-Provide:
+Provide a short summary with:
 - Key conditions
 - Symptom progression
 - Important observations
@@ -56,13 +53,21 @@ Provide:
 
     return response.choices[0].message.content
 
-
 # -----------------------------
 # Page Config
 # -----------------------------
 st.set_page_config(page_title="Medical AI Assistant", layout="wide")
 st.title("🏥 AI Medical Assistant (Doctor Copilot)")
 
+st.subheader("📊 Patient Dashboard")
+
+patients = get_all_patients()
+
+if patients:
+    for p in patients:
+        st.markdown(f"👤 {p}")
+else:
+    st.info("No patients available yet.")
 
 # -----------------------------
 # Sidebar Settings
@@ -75,11 +80,12 @@ use_rag = st.sidebar.checkbox("Enable RAG", value=True)
 if st.sidebar.button("🧹 Clear Chat"):
     st.session_state.chat_history = []
 
-
 # -----------------------------
-# Patient Selection
+# Patient Input
 # -----------------------------
 st.sidebar.header("Patient Details")
+
+
 
 patients_list = get_all_patients()
 
@@ -93,9 +99,11 @@ if selected_patient == "New Patient":
 else:
     name = selected_patient
 
+#name = st.sidebar.text_input("Name")
+
+
 age = st.sidebar.number_input("Age", min_value=0, max_value=120)
 symptoms = st.sidebar.text_area("Symptoms")
-
 
 # -----------------------------
 # Patient History
@@ -105,9 +113,7 @@ patient_history = get_patient_summary(name)
 st.sidebar.subheader("📜 Patient History")
 st.sidebar.write(patient_history)
 
-# -----------------------------
 # AI Summary
-# -----------------------------
 if name:
     full_history = get_patient_full_history(name)
 
@@ -117,7 +123,6 @@ if name:
             st.sidebar.subheader("🧾 AI Summary")
             st.sidebar.write(summary)
 
-
 # -----------------------------
 # Cache Vector Store
 # -----------------------------
@@ -125,6 +130,18 @@ if name:
 def cached_vector_store(text):
     return create_vector_store(text)
 
+# -----------------------------
+# PDF Upload
+# -----------------------------
+st.subheader("📂 Upload Medical Document")
+
+uploaded_file = st.file_uploader("Upload PDF", type="pdf")
+
+if uploaded_file:
+    with st.spinner("Processing PDF..."):
+        text = load_pdf(uploaded_file)
+        st.session_state.vector_store = cached_vector_store(text)
+        st.success("Document processed!")
 
 # -----------------------------
 # Chat State
@@ -132,14 +149,10 @@ def cached_vector_store(text):
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-
 # -----------------------------
 # Chat Interface
 # -----------------------------
 st.subheader("💬 Ask the Assistant")
-
-if "vector_store" not in st.session_state:
-    st.info("📂 Upload a document below to enable RAG responses")
 
 user_query = st.text_input("Enter your question")
 
@@ -153,16 +166,22 @@ if st.button("Ask AI"):
         st.warning("Please enter a question")
         st.stop()
 
+    # -----------------------------
     # Show user message
+    # -----------------------------
     with st.chat_message("user"):
         st.markdown(user_query)
 
-    # Convert chat history
+    # -----------------------------
+    # Convert chat history → text
+    # -----------------------------
     chat_history_text = ""
     for chat in st.session_state.chat_history:
         chat_history_text += f"Doctor: {chat['question']}\nAssistant: {chat['answer']}\n"
 
-    # Patient context
+    # -----------------------------
+    # Build full patient context
+    # -----------------------------
     full_patient_context = f"""
 Current Visit:
 Name: {name}
@@ -173,7 +192,9 @@ Previous History:
 {patient_history}
 """
 
-    # RAG retrieval
+    # -----------------------------
+    # Retrieval (RAG)
+    # -----------------------------
     docs = []
     retrieved_text = ""
 
@@ -184,7 +205,9 @@ Previous History:
         )
         retrieved_text = "\n".join([doc.page_content for doc in docs])
 
-    # Prompt
+    # -----------------------------
+    # Build Prompt
+    # -----------------------------
     prompt = build_prompt(
         full_patient_context,
         chat_history_text,
@@ -192,7 +215,9 @@ Previous History:
         user_query
     )
 
-    # Streaming response
+    # -----------------------------
+    # LLM Streaming Response
+    # -----------------------------
     with st.chat_message("assistant"):
         placeholder = st.empty()
         full_response = ""
@@ -212,23 +237,28 @@ Previous History:
 
     answer = full_response
 
-    # Save chat
+    # -----------------------------
+    # Save Chat History
+    # -----------------------------
     st.session_state.chat_history.append(
         {"question": user_query, "answer": answer}
     )
 
-    # Save patient visit
+    # -----------------------------
+    # Save Patient Visit
+    # -----------------------------
     if name and symptoms:
         add_or_update_patient(name, symptoms, answer)
 
-    # Debug mode
+    # -----------------------------
+    # Debug: Show Retrieved Docs
+    # -----------------------------
     if debug_mode and docs:
         with st.expander("📄 Retrieved Medical Context"):
             for i, doc in enumerate(docs):
                 st.write(f"Chunk {i+1}")
                 st.write(doc.page_content)
                 st.write("---")
-
 
 # -----------------------------
 # Display Chat History
@@ -239,37 +269,3 @@ for chat in st.session_state.chat_history:
 
     with st.chat_message("assistant"):
         st.markdown(chat["answer"])
-
-
-# -----------------------------
-# 📂 Upload Document (BOTTOM)
-# -----------------------------
-st.markdown("---")
-st.subheader("📂 Upload Medical Document")
-
-uploaded_file = st.file_uploader("Upload PDF", type="pdf")
-
-if uploaded_file:
-    with st.spinner("Processing PDF..."):
-        text = load_pdf(uploaded_file)
-        st.session_state.vector_store = cached_vector_store(text)
-        st.success("Document processed!")
-
-
-
-
-
-
-# -----------------------------
-# 📊 Patient Dashboard (BOTTOM)
-# -----------------------------
-st.markdown("---")
-st.subheader("📊 Patient Dashboard")
-
-patients = get_all_patients()
-
-if patients:
-    for p in patients:
-        st.markdown(f"👤 {p}")
-else:
-    st.info("No patients available yet.")
