@@ -16,6 +16,11 @@ def create_vector_store(text):
     return vector_store
 
 
+# def retrieve_docs(vector_store, query):
+#     docs = vector_store.similarity_search(query, k=3)
+#     return "\n".join([doc.page_content for doc in docs])
+
+
 def retrieve_docs(vector_store, query):
     docs = vector_store.similarity_search(query, k=3)
-    return "\n".join([doc.page_content for doc in docs])
+    return docs   # return full docs, NOT joined text
