@@ -1,0 +1,104 @@
+{
+    "patients": [
+        {
+            "name": "Amit",
+            "history": [
+                {
+                    "date": "2026-04-10",
+                    "symptoms": "Frequent urination, fatigue",
+                    "notes": "Possible Type 2 Diabetes"
+                },
+                {
+                    "date": "2026-04-20",
+                    "symptoms": "Blurred vision, increased thirst",
+                    "notes": "Follow-up, glucose monitoring advised"
+                },
+                {
+                    "date": "2026-04-27",
+                    "symptoms": "Dizziness and weakness",
+                    "notes": "According to the provided document, Amit's current symptoms of dizziness and weakness, in conjunction with his previous history of frequent urination, fatigue, blurred vision, and increased thirst, suggest that there may be an underlying metabolic or endocrine issue, likely related to diabetes. However, without further clinical information, a definitive diagnosis cannot be made at this time. More tests or evaluations would be necessary to arrive at an accurate diagnosis."
+                }
+            ]
+        },
+        {
+            "name": "Ravi",
+            "history": [
+                {
+                    "date": "2026-04-12",
+                    "symptoms": "Fever, cough, sore throat",
+                    "notes": "Suspected viral infection"
+                },
+                {
+                    "date": "2026-04-22",
+                    "symptoms": "Persistent cough",
+                    "notes": "Chest X-ray recommended"
+                }
+            ]
+        },
+        {
+            "name": "Neha",
+            "history": [
+                {
+                    "date": "2026-04-08",
+                    "symptoms": "Headache, nausea",
+                    "notes": "Migraine suspected"
+                },
+                {
+                    "date": "2026-04-18",
+                    "symptoms": "Severe headache with light sensitivity",
+                    "notes": "Medication adjusted"
+                }
+            ]
+        },
+        {
+            "name": "Priya",
+            "history": [
+                {
+                    "date": "2026-04-05",
+                    "symptoms": "Abdominal pain, bloating",
+                    "notes": "Possible gastritis"
+                },
+                {
+                    "date": "2026-04-19",
+                    "symptoms": "Acid reflux, discomfort after meals",
+                    "notes": "Dietary changes advised"
+                }
+            ]
+        },
+        {
+            "name": "Karan",
+            "history": [
+                {
+                    "date": "2026-04-11",
+                    "symptoms": "Chest pain, shortness of breath",
+                    "notes": "Cardiac evaluation suggested"
+                },
+                {
+                    "date": "2026-04-21",
+                    "symptoms": "Mild chest discomfort during exertion",
+                    "notes": "ECG and stress test recommended"
+                }
+            ]
+        },
+        {
+            "name": "Rahul",
+            "history": [
+                {
+                    "date": "2026-04-27",
+                    "symptoms": "Fever, headache\n",
+                    "notes": ""
+                }
+            ]
+        },
+        {
+            "name": "Kavya",
+            "history": [
+                {
+                    "date": "2026-04-27",
+                    "symptoms": "Fever and weakness",
+                    "notes": "According to the provided document, Kavya's current symptoms of fever and weakness could potentially indicate a variety of conditions. However, given the lack of previous medical history, it is difficult to ascertain a specific diagnosis. Possible conditions could range from infectious diseases to metabolic imbalances. More clinical information and diagnostic testing would be necessary to refine the possibilities and determine an accurate condition."
+                }
+            ]
+        }
+    ]
+}

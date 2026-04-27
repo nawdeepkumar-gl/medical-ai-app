@@ -7,24 +7,70 @@ from utils.pdf_loader import load_pdf
 from rag_pipeline import create_vector_store, retrieve_docs
 from prompts import build_prompt
 
-# Load env
-load_dotenv()
-#client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Patient DB
+from utils.patient_db import add_or_update_patient, get_patient_summary
 
-from openai import OpenAI
-import os
+# Get all patients' name and patient's full history
+from utils.patient_db import get_all_patients, get_patient_full_history
+
+# -----------------------------
+# Load environment
+# -----------------------------
+load_dotenv()
 
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
-    base_url=os.getenv("OPENAI_BASE_URL")  
+    base_url=os.getenv("OPENAI_BASE_URL")
 )
 
-st.set_page_config(page_title="Medical AI Assistant", layout="wide")
+def generate_patient_summary(history):
 
-st.title("🏥 AI Medical Assistant (Doctor Copilot)")
+    if not history:
+        return "No history available."
+
+    history_text = ""
+    for visit in history:
+        history_text += f"Date: {visit['date']}, Symptoms: {visit['symptoms']}\n"
+
+    prompt = f"""
+You are a medical assistant.
+
+Summarize the patient's history in a concise clinical format.
+
+History:
+{history_text}
+
+Provide a short summary with:
+- Key conditions
+- Symptom progression
+- Important observations
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response.choices[0].message.content
 
 # -----------------------------
-# Sidebar: Patient Context
+# Page Config
+# -----------------------------
+st.set_page_config(page_title="Medical AI Assistant", layout="wide")
+st.title("🏥 AI Medical Assistant (Doctor Copilot)")
+
+st.subheader("📊 Patient Dashboard")
+
+patients = get_all_patients()
+
+if patients:
+    for p in patients:
+        st.markdown(f"👤 {p}")
+else:
+    st.info("No patients available yet.")
+
+# -----------------------------
+# Sidebar Settings
 # -----------------------------
 st.sidebar.subheader("⚙️ Settings")
 
@@ -34,19 +80,52 @@ use_rag = st.sidebar.checkbox("Enable RAG", value=True)
 if st.sidebar.button("🧹 Clear Chat"):
     st.session_state.chat_history = []
 
+# -----------------------------
+# Patient Input
+# -----------------------------
 st.sidebar.header("Patient Details")
 
-name = st.sidebar.text_input("Name")
+
+
+patients_list = get_all_patients()
+
+selected_patient = st.sidebar.selectbox(
+    "Select Patient",
+    ["New Patient"] + patients_list
+)
+
+if selected_patient == "New Patient":
+    name = st.sidebar.text_input("Enter New Patient Name")
+else:
+    name = selected_patient
+
+#name = st.sidebar.text_input("Name")
+
+
 age = st.sidebar.number_input("Age", min_value=0, max_value=120)
 symptoms = st.sidebar.text_area("Symptoms")
 
-patient_context = f"""
-Name: {name}
-Age: {age}
-Symptoms: {symptoms}
-"""
+# -----------------------------
+# Patient History
+# -----------------------------
+patient_history = get_patient_summary(name)
 
-# Adding cache
+st.sidebar.subheader("📜 Patient History")
+st.sidebar.write(patient_history)
+
+# AI Summary
+if name:
+    full_history = get_patient_full_history(name)
+
+    if full_history:
+        if st.sidebar.button("🧠 Generate Patient Summary"):
+            summary = generate_patient_summary(full_history)
+            st.sidebar.subheader("🧾 AI Summary")
+            st.sidebar.write(summary)
+
+# -----------------------------
+# Cache Vector Store
+# -----------------------------
 @st.cache_resource
 def cached_vector_store(text):
     return create_vector_store(text)
@@ -61,15 +140,11 @@ uploaded_file = st.file_uploader("Upload PDF", type="pdf")
 if uploaded_file:
     with st.spinner("Processing PDF..."):
         text = load_pdf(uploaded_file)
-        #st.session_state.vector_store = create_vector_store(text)
-
-        #Using cache
         st.session_state.vector_store = cached_vector_store(text)
-
         st.success("Document processed!")
 
 # -----------------------------
-# Session State for Chat
+# Chat State
 # -----------------------------
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
@@ -83,17 +158,43 @@ user_query = st.text_input("Enter your question")
 
 if st.button("Ask AI"):
 
+    if not name:
+        st.warning("Please enter patient name")
+        st.stop()
+
     if not user_query:
         st.warning("Please enter a question")
         st.stop()
 
-    # retrieved_docs = ""
-    # if "vector_store" in st.session_state:
-    #     retrieved_docs = retrieve_docs(
-    #         st.session_state.vector_store,
-    #         user_query
-    #     )
+    # -----------------------------
+    # Show user message
+    # -----------------------------
+    with st.chat_message("user"):
+        st.markdown(user_query)
 
+    # -----------------------------
+    # Convert chat history → text
+    # -----------------------------
+    chat_history_text = ""
+    for chat in st.session_state.chat_history:
+        chat_history_text += f"Doctor: {chat['question']}\nAssistant: {chat['answer']}\n"
+
+    # -----------------------------
+    # Build full patient context
+    # -----------------------------
+    full_patient_context = f"""
+Current Visit:
+Name: {name}
+Age: {age}
+Symptoms: {symptoms}
+
+Previous History:
+{patient_history}
+"""
+
+    # -----------------------------
+    # Retrieval (RAG)
+    # -----------------------------
     docs = []
     retrieved_text = ""
 
@@ -104,22 +205,19 @@ if st.button("Ask AI"):
         )
         retrieved_text = "\n".join([doc.page_content for doc in docs])
 
+    # -----------------------------
+    # Build Prompt
+    # -----------------------------
     prompt = build_prompt(
-        patient_context,
-        st.session_state.chat_history,
-       # retrieved_docs,
+        full_patient_context,
+        chat_history_text,
         retrieved_text,
         user_query
     )
 
-    # with st.spinner("Thinking..."):
-    #     response = client.chat.completions.create(
-    #         model="gpt-4o-mini",
-    #         messages=[{"role": "user", "content": prompt}]
-    #     )
-
-    # answer = response.choices[0].message.content
-
+    # -----------------------------
+    # LLM Streaming Response
+    # -----------------------------
     with st.chat_message("assistant"):
         placeholder = st.empty()
         full_response = ""
@@ -139,11 +237,22 @@ if st.button("Ask AI"):
 
     answer = full_response
 
-    # Store history
+    # -----------------------------
+    # Save Chat History
+    # -----------------------------
     st.session_state.chat_history.append(
         {"question": user_query, "answer": answer}
     )
 
+    # -----------------------------
+    # Save Patient Visit
+    # -----------------------------
+    if name and symptoms:
+        add_or_update_patient(name, symptoms, answer)
+
+    # -----------------------------
+    # Debug: Show Retrieved Docs
+    # -----------------------------
     if debug_mode and docs:
         with st.expander("📄 Retrieved Medical Context"):
             for i, doc in enumerate(docs):
@@ -152,14 +261,8 @@ if st.button("Ask AI"):
                 st.write("---")
 
 # -----------------------------
-# Display Chat
+# Display Chat History
 # -----------------------------
-# for chat in st.session_state.chat_history:
-#     st.markdown(f"**👨‍⚕️ Doctor:** {chat['question']}")
-#     st.markdown(f"**🤖 Assistant:** {chat['answer']}")
-#     st.markdown("---")
-
-
 for chat in st.session_state.chat_history:
     with st.chat_message("user"):
         st.markdown(chat["question"])
