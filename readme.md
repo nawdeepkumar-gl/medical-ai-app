@@ -10,18 +10,19 @@ It enables doctors to:
 * Track patient history over multiple visits
 * Upload medical documents (PDFs)
 * Ask clinical questions
-* Receive **context-aware, grounded responses** using RAG (Retrieval-Augmented Generation)
+* Receive **context-aware, grounded responses** using Retrieval-Augmented Generation (RAG)
 
 ---
 
-## 🎯 Objective
+## 🎯 Why This Project
 
-To demonstrate how modern GenAI systems combine:
+This project demonstrates how modern GenAI systems can be built to:
 
-* 🧠 Large Language Models (LLMs)
-* 📂 Retrieval-Augmented Generation (RAG)
-* 🧾 Patient memory (stateful systems)
-* 💬 Conversational interfaces
+* Reduce hallucinations in LLM responses
+* Enable document-grounded medical reasoning
+* Maintain **stateful patient memory**
+* Simulate real-world healthcare AI systems
+* Combine **LLMs + Vector Databases + Patient Context**
 
 ---
 
@@ -66,7 +67,7 @@ To demonstrate how modern GenAI systems combine:
 
 ---
 
-### 🔍 Retrieval-Augmented Generation
+### 🔍 Retrieval-Augmented Generation (RAG)
 
 * Retrieves relevant document chunks
 * Injects into prompt
@@ -128,6 +129,16 @@ Grounded Response
 
 ---
 
+## 📸 Demo
+
+```
+/assets/demo.png
+```
+
+*(Add screenshots here for better impact)*
+
+---
+
 ## 📁 Project Structure
 
 ```text
@@ -137,6 +148,7 @@ medical-ai-app/
 │── rag_pipeline.py
 │── patients.json
 │── requirements.txt
+│── Dockerfile
 │── .env
 │── utils/
 │    ├── pdf_loader.py
@@ -145,9 +157,9 @@ medical-ai-app/
 
 ---
 
-## ⚙️ Setup Instructions
+# ⚙️ Local Setup Instructions
 
-### 1️⃣ Clone Repository
+## 1️⃣ Clone Repository
 
 ```bash
 git clone https://github.com/<your-username>/medical-ai-assistant.git
@@ -156,7 +168,7 @@ cd medical-ai-assistant
 
 ---
 
-### 2️⃣ Create Virtual Environment
+## 2️⃣ Create Virtual Environment
 
 ```bash
 python -m venv streamlit_venv
@@ -164,7 +176,7 @@ python -m venv streamlit_venv
 
 ---
 
-### 3️⃣ Activate Environment
+## 3️⃣ Activate Environment
 
 ```bash
 # Windows
@@ -176,7 +188,7 @@ source streamlit_venv/bin/activate
 
 ---
 
-### 4️⃣ Install Dependencies
+## 4️⃣ Install Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -186,7 +198,7 @@ pip install -r requirements.txt
 
 ## 🔐 Environment Variables
 
-Create `.env` file:
+Create a `.env` file:
 
 ```env
 OPENAI_API_KEY=your_api_key
@@ -250,22 +262,163 @@ Based on patient history, what is the likely condition?
 
 ---
 
-## 🎓 Learning Outcomes
+## 📝 Notes
 
-* Understand RAG systems
-* Build stateful AI applications
-* Integrate LLM + UI + data
-* Design safe AI systems for healthcare
+* Ensure PDFs contain **selectable text** (not scanned images)
+* Responses are grounded in retrieved + patient context
+* Not a substitute for real medical advice
 
 ---
 
-## 🚀 Future Enhancements
+# 🐳 Docker Setup
 
-* Patient dashboard with filters
-* Timeline visualization
+## 📦 Prerequisites
+
+* Windows 10/11 (64-bit)
+* WSL2 enabled
+* Docker Desktop installed
+
+---
+
+## ⚙️ Step 1: Install Docker
+
+1. Download Docker Desktop
+   https://www.docker.com/products/docker-desktop/
+
+2. Install and launch Docker Desktop
+
+3. Enable **WSL 2 integration**
+
+---
+
+## 🔍 Step 2: Verify Installation
+
+```bash
+docker version
+```
+
+Ensure both:
+
+```
+Client:
+Server:
+```
+
+---
+
+## 🔐 Step 3: Fix Permission Issue (WSL)
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+Then restart WSL (PowerShell):
+
+```bash
+wsl --shutdown
+```
+
+---
+
+## 📁 Step 4: Navigate to Project
+
+```bash
+cd /mnt/d/medical-ai-app
+```
+
+---
+
+## 🐳 Step 5: Dockerfile
+
+```dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY . /app
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+```
+
+---
+
+## 📦 Step 6: Build Docker Image
+
+```bash
+docker build -t medical-ai-app .
+```
+
+---
+
+## ▶️ Step 7: Run Container
+
+```bash
+docker run -p 8501:8501 \
+-e OPENAI_API_KEY=your_key \
+-e OPENAI_BASE_URL=https://api.openai.com/v1 \
+medical-ai-app
+```
+
+---
+
+## 🌐 Step 8: Access Application
+
+👉 http://localhost:8501
+
+---
+
+## ⚠️ Common Issues & Fixes
+
+### Docker not running
+
+Start Docker Desktop
+
+---
+
+### Cannot connect to Docker daemon
+
+Enable WSL integration in Docker Desktop
+
+---
+
+### Permission denied
+
+```bash
+newgrp docker
+```
+
+---
+
+### App not loading
+
+* Check logs in terminal
+* Verify `app.py` exists
+* Ensure dependencies are installed
+
+---
+
+# 🚀 Future Enhancements
+
+* Patient timeline visualization
+* PDF report export
 * FastAPI backend
-* Database integration
+* Database integration (PostgreSQL)
 * Authentication system
+* Multi-user support
+* Cloud deployment (AWS / Azure)
+
+---
+
+## 🎓 Learning Outcomes
+
+* Build RAG-based applications
+* Design stateful AI systems
+* Integrate LLM + UI + data
+* Apply GenAI in healthcare
 
 ---
 
