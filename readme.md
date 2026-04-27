@@ -132,7 +132,7 @@ Grounded Response
 ## Demo
 
 ```
-/assets/demo.png
+image.png
 ```
 ![alt text](image.png)
 
